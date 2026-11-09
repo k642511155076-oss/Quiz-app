@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quiz ngẫu nhiên</title>
+<style>
+:root{--bg:#f6f5f1;--card:#fff;--text:#1d1d1b;--muted:#6b6b66;--accent:#d9480f;--accent-t:#fff;--line:#e3e1da;--ans:#e8f5e9;--ans-t:#1b5e20;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#17171a;--card:#222226;--text:#f1f0ec;--muted:#9a9a94;--accent:#ff8a4c;--accent-t:#1a1a1a;--line:#38383d;--ans:#1e3a24;--ans-t:#a5e6b0;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#17171a;--card:#222226;--text:#f1f0ec;--muted:#9a9a94;--accent:#ff8a4c;--accent-t:#1a1a1a;--line:#38383d;--ans:#1e3a24;--ans-t:#a5e6b0;color-scheme:dark}
+html{height:100%}
+body{margin:0;min-height:100%;background:radial-gradient(ellipse at 50% 0%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 65%) no-repeat,var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;justify-content:center;align-items:center;padding:24px 16px;text-align:center}
+.wrap{width:100%;max-width:560px}
+h1{font-size:26px;margin:0 0 6px;letter-spacing:-.5px}
+.sub{color:var(--muted);font-size:14px;margin-bottom:18px;display:flex;justify-content:center;gap:10px}
+.sub span+span::before{content:"•";margin-right:10px}
+.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin-bottom:22px}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+.card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:32px 24px;min-height:280px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;box-shadow:0 12px 40px rgba(0,0,0,.10)}
+.badge{width:44px;height:44px;border-radius:50%;background:var(--accent);color:var(--accent-t);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px}
+.q{font-size:24px;line-height:1.4;font-weight:650;margin:0;text-align:center}
+.ans{display:none;background:var(--ans);color:var(--ans-t);border-radius:14px;padding:14px 20px;font-size:21px;font-weight:700;text-align:center}
+.ans.show{display:block;animation:pop .3s ease}
+@keyframes pop{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:none}}
+.btns{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:20px}
+button.ghost{flex-basis:100%;background:transparent;border-style:dashed;color:var(--muted);padding:12px;font-size:14px}
+button{flex:1;font:inherit;font-weight:600;padding:16px;border-radius:14px;transition:transform .1s;border:1px solid var(--line);background:var(--card);color:var(--text);cursor:pointer}
+button:active{transform:scale(.97)}
+button.primary{background:var(--accent);color:var(--accent-t);border-color:var(--accent)}
+button:disabled{opacity:.4;cursor:default}
+.end{text-align:center;padding:30px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Quiz ngẫu nhiên</h1>
+  <div class="sub"><span id="count"></span><span>Không lặp câu</span></div>
+  <div class="bar"><i id="bar"></i></div>
+  <div class="card" id="card"></div>
+  <div class="btns" id="btns"></div>
+</div>
+<script>
+const Q=[
+["What has a thumb and four fingers but is not alive?","A glove"],
+["Which country has the most natural lakes in the world?","Canada"],
+["What can travel around the world while staying in one corner?","A stamp"],
+["How many minutes are there in a full week?","10,080 minutes"],
+["What has cities but no houses, forests but no trees, and rivers but no water?","A map"],
+["Which animal has three hearts?","The octopus"],
+["What goes up when the rain comes down?","An umbrella"],
+["Which is the only mammal capable of true flight?","The bat"],
+["What has a head and a tail but no body?","A coin"],
+["What is the chemical symbol for gold?","Au"],
+["The more you take, the more you leave behind. What are they?","Footsteps"],
+["Which country gifted the Statue of Liberty to the United States?","France"],
+["What can fill a room but takes up no space?","Light"],
+["How many players are there on a standard football (soccer) team on the field?","11 players"],
+["What has an end but no beginning, a home but no family, and a space but no room?","A computer keyboard (End, Home, Space keys)"],
+["Which bird is famous for being able to fly backwards?","The hummingbird"],
+["What is the longest river in the world, traditionally recognized in geography?","The Nile"],
+["What has to be broken before you can use it?","An egg"],
+["Which element has the chemical symbol O?","Oxygen"],
+["What has branches but no leaves, no trunk and no fruit?","A bank"],
+["Which is the only continent located in all four hemispheres?","Africa"],
+["What has 88 keys but cannot open any locks?","A piano"],
+["If you multiply all the numbers on a telephone keypad together, what is the result?","0 (because the keypad includes 0)"],
+["Which human sense is most closely associated with the olfactory system?","Smell"],
+["What can you hold in your left hand but never in your right hand?","Your right hand"],
+["Which famous scientist developed the theory of general relativity?","Albert Einstein"],
+["What is so fragile that saying its name breaks it?","Silence"],
+["Which planet has the most prominent ring system?","Saturn"],
+["What has a bottom at the top?","A leg"],
+["What is the only letter that does not appear in the name of any US state?","The letter Q"]
+];
+let deck,idx,shown;
+const $=id=>document.getElementById(id);
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function start(){deck=shuffle(Q);idx=0;shown=false;render()}
+function render(){
+  $('count').textContent=idx>=deck.length?'Đã hết '+deck.length+' câu':'Câu '+(idx+1)+' / '+deck.length;
+  $('bar').style.width=(idx/deck.length*100)+'%';
+  if(idx>=deck.length){
+    $('card').innerHTML='<div class="end"><p class="q">Hết rồi! Bạn đã trả lời cả '+deck.length+' câu.</p></div>';
+    $('btns').innerHTML='<button class="primary" id="again">Chơi lại từ đầu</button>';
+    $('again').onclick=start;return;
+  }
+  const [q,a]=deck[idx];
+  $('card').innerHTML='<div class="badge">'+(idx+1)+'</div><p class="q"></p><div class="ans" id="ans"></div>';
+  $('card').querySelector('.q').textContent=q;
+  $('ans').textContent=a;
+  if(shown)$('ans').classList.add('show');
+  $('btns').innerHTML='<button id="show" '+(shown?'disabled':'')+'>Xem đáp án</button><button class="primary" id="next">Câu tiếp theo</button><button class="ghost" id="restart">↺ Chơi lại từ đầu</button>';
+  $('show').onclick=()=>{shown=true;$('ans').classList.add('show');$('show').disabled=true};
+  $('next').onclick=()=>{idx++;shown=false;render()};
+  $('restart').onclick=start;
+}
+start();
+</script>
+</body>
+</html>
